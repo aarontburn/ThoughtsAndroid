@@ -39,13 +39,20 @@ public class MainActivity extends AppCompatActivity {
 
 
     private ConstraintLayout textViewLayout; // visible on startup
-    private ConstraintLayout listViewLayout; // gone on startup
+    private ConstraintLayout listViewLayout;
     private ConstraintLayout settingsLayout;
+    private ConstraintLayout[] layoutList;
+
+    private void addLayoutToList() {
+        layoutList = new ConstraintLayout[]{textViewLayout, listViewLayout, settingsLayout};
+    }
+
+
     public Button listButton; // toggles between text view and list view
 
 
     private Button sortButton, newButton, deleteButton, doneButton;
-    private Button prevButton, nextButton, settingsBackButton;
+    private Button prevButton, nextButton;
     private CheckBox lockTitleCheckBox, lockTagCheckBox;
 
     private TableRow buttonContainer;
@@ -55,7 +62,9 @@ public class MainActivity extends AppCompatActivity {
     private EditText titleTextField, tagTextField, bodyTextField;
     private TextView dateText;
     private ListView listView;
-    private SettingsHandler settings;
+    public SettingsHandler settings;
+
+    public NotificationHandler notificationHandler;
 
 
     @Override
@@ -70,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true);
             ((KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE)).requestDismissKeyguard(this, null);
@@ -80,20 +88,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        showNotification("Thoughts", "Tap to open the app.");
 
 
         TC.UNSORTED_DIR = new File(getFilesDir().toString() + "/unsorted/");
         TC.SORTED_DIR = new File(getFilesDir().toString() + "/sorted/");
 
         findViews();
+        addLayoutToList();
 
         attachEvents();
 
         listView = new ListView(this);
         settings = new SettingsHandler(this);
 
-
+        notificationHandler = new NotificationHandler(this);
 
     }
 
@@ -118,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
         doneButton = findViewById(R.id.doneButton);
         prevButton = findViewById(R.id.prevButton);
         nextButton = findViewById(R.id.nextButton);
-        settingsBackButton = findViewById(R.id.settingsBackButton);
 
         buttonContainer = findViewById(R.id.buttonContainer);
 
@@ -133,42 +140,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void showNotification(final String title, final String message) {
-        final NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = manager.getNotificationChannel(TC.CHANNEL_ID);
-            if (channel == null) {
-                channel = new NotificationChannel(TC.CHANNEL_ID, "Thoughts Channel", NotificationManager.IMPORTANCE_DEFAULT);
-                channel.setDescription("Thoughts");
-                channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-                manager.createNotificationChannel(channel);
-            }
-        }
-
-
-        final Intent notificationIntent = new Intent(this, MainActivity.class);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, TC.CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_MIN)
-                .setOngoing(true)
-                .setAutoCancel(false);
-
-        builder.setContentIntent(PendingIntent.getActivity(this, 0, notificationIntent, 0));
-
-
-        final NotificationManagerCompat m = NotificationManagerCompat.from(getApplicationContext());
-
-        if (ActivityCompat.checkSelfPermission(this,
-                android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        m.notify(TC.NOTIFICATION_OPENER_ID, builder.build());
-    }
 
 
     public void setTextFields(ThoughtObject obj) {
@@ -240,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         listButton.setOnClickListener(v -> {
-            swapLayouts(textViewLayout);
+            swapLayouts(textViewLayout.getVisibility() == View.VISIBLE ? R.id.listViewLayout : R.id.textViewLayout);
             listView.validateItemList();
         });
 
@@ -339,8 +310,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (layoutID == R.id.textViewLayout) {
             listButton.setText("List");
+
+            for (final ConstraintLayout layout : layoutList) {
+                layout.setVisibility(View.GONE);
+            }
             textViewLayout.setVisibility(View.VISIBLE);
-            listViewLayout.setVisibility(View.GONE);
 
             prevButton.setText("<");
             prevButton.setOnClickListener(v -> {
@@ -354,28 +328,30 @@ public class MainActivity extends AppCompatActivity {
             });
 
 
-        } else if (layoutID == R.id.listViewLayout){
+        } else if (layoutID == R.id.listViewLayout) {
 
             listButton.setText("Back");
-            textViewLayout.setVisibility(View.GONE);
+
+            for (final ConstraintLayout layout : layoutList) {
+                layout.setVisibility(View.GONE);
+            }
             listViewLayout.setVisibility(View.VISIBLE);
 
             prevButton.setText("⟳");
             prevButton.setOnClickListener(v -> listView.refreshThoughtLists());
 
             nextButton.setText("⚙");
-            nextButton.setOnClickListener(v -> {
-            });
+            nextButton.setOnClickListener(v -> swapLayouts(R.id.settingsLayout));
 
         } else if (layoutID == R.id.settingsLayout) {
             settingsLayout.setVisibility(View.VISIBLE);
 
         }
+
+
+
     }
 
-    public void swapLayouts(final ConstraintLayout layout) {
-        swapLayouts(layout.getId());
-    }
 
     private void resetFocus() {
         final View current = getCurrentFocus();
@@ -415,7 +391,6 @@ public class MainActivity extends AppCompatActivity {
 //                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 //                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 //                }
-
 
 
             }

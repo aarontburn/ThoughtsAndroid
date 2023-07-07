@@ -96,9 +96,7 @@ public class ListView {
 
         }
         tagList.addView(unsortedThoughtList);
-        System.out.println(tagList.getChildCount());
         tagList.addView(sortedThoughtList);
-        System.out.println(tagList.getChildCount());
 
 
         final List<String> set = new ArrayList<>(thoughtListByTag.keySet());

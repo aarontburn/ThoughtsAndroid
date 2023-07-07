@@ -28,8 +28,17 @@ public class TC {
     public static final int NOTIFICATION_OPENER_ID = 1;
 
 
+    public class Settings {
+        public static final String QUICK_LAUNCH = "Quick-launch notification";
+
+        public static final String PUSH_ON_EXIT = "Push on exit";
+
+        public static final String PULL_ON_STARTUP = "Pull on startup";
+
+        public static final String LIGHT_MODE = "Light mode";
 
 
+    }
 
 
 }
