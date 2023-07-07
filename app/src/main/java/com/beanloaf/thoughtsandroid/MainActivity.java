@@ -334,10 +334,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void swapLayouts(final ConstraintLayout layout) {
+    public void swapLayouts(final int layoutID) {
         resetFocus();
-        final int layoutID = layout.getId();
-
 
         if (layoutID == R.id.textViewLayout) {
             listButton.setText("List");
@@ -373,8 +371,10 @@ public class MainActivity extends AppCompatActivity {
             settingsLayout.setVisibility(View.VISIBLE);
 
         }
+    }
 
-
+    public void swapLayouts(final ConstraintLayout layout) {
+        swapLayouts(layout.getId());
     }
 
     private void resetFocus() {
