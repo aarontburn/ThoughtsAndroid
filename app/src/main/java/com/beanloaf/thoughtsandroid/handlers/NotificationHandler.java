@@ -1,4 +1,4 @@
-package com.beanloaf.thoughtsandroid;
+package com.beanloaf.thoughtsandroid.handlers;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -14,6 +14,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import com.beanloaf.thoughtsandroid.views.MainActivity;
+import com.beanloaf.thoughtsandroid.R;
+import com.beanloaf.thoughtsandroid.res.TC;
+
 import java.util.Objects;
 
 public class NotificationHandler {
@@ -24,7 +28,7 @@ public class NotificationHandler {
     public NotificationHandler(final MainActivity main) {
         this.main = main;
 
-        if (Objects.requireNonNull(main.settings.settingsList.get(TC.Settings.QUICK_LAUNCH)).isChecked())
+        if (Objects.requireNonNull(main.settings.settingsMap.get(TC.Settings.QUICK_LAUNCH)).isChecked())
             showQuickLaunchNotification();
 
     }

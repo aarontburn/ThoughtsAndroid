@@ -1,7 +1,8 @@
-package com.beanloaf.thoughtsandroid;
+package com.beanloaf.thoughtsandroid.objects;
 
 
-import android.nfc.Tag;
+import com.beanloaf.thoughtsandroid.views.MainActivity;
+import com.beanloaf.thoughtsandroid.res.TC;
 
 import org.json.JSONObject;
 
@@ -9,7 +10,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;

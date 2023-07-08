@@ -1,10 +1,14 @@
-package com.beanloaf.thoughtsandroid;
+package com.beanloaf.thoughtsandroid.views;
 
 import android.view.View;
 import android.widget.LinearLayout;
 
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.beanloaf.thoughtsandroid.R;
+import com.beanloaf.thoughtsandroid.objects.ListItem;
+import com.beanloaf.thoughtsandroid.objects.TagListItem;
+import com.beanloaf.thoughtsandroid.objects.ThoughtObject;
+import com.beanloaf.thoughtsandroid.res.TC;
 
 import org.json.JSONObject;
 

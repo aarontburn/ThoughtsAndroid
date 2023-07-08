@@ -1,21 +1,12 @@
-package com.beanloaf.thoughtsandroid;
+package com.beanloaf.thoughtsandroid.views;
 
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import android.app.KeyguardManager;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
@@ -28,6 +19,12 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import com.beanloaf.thoughtsandroid.R;
+import com.beanloaf.thoughtsandroid.handlers.NotificationHandler;
+import com.beanloaf.thoughtsandroid.handlers.SettingsHandler;
+import com.beanloaf.thoughtsandroid.objects.ThoughtObject;
+import com.beanloaf.thoughtsandroid.res.TC;
 
 import java.io.File;
 

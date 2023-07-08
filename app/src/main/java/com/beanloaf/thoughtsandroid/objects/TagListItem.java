@@ -1,10 +1,13 @@
-package com.beanloaf.thoughtsandroid;
+package com.beanloaf.thoughtsandroid.objects;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import com.beanloaf.thoughtsandroid.views.ListView;
+import com.beanloaf.thoughtsandroid.views.MainActivity;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -6,4 +6,6 @@
 
     <color name="textHighlightColor">#74138FE1</color>
     <color name="textColor">#FFD1D1D1</color>
+    <color name="buttonColor">#B3B3B3</color>
+
 </resources>

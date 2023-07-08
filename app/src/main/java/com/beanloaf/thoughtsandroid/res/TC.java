@@ -1,4 +1,4 @@
-package com.beanloaf.thoughtsandroid;
+package com.beanloaf.thoughtsandroid.res;
 
 import java.io.File;
 
