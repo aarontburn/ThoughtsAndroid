@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -21,6 +22,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.beanloaf.thoughtsandroid.R;
+import com.beanloaf.thoughtsandroid.database.FirebaseHandler;
 import com.beanloaf.thoughtsandroid.handlers.NotificationHandler;
 import com.beanloaf.thoughtsandroid.handlers.SettingsHandler;
 import com.beanloaf.thoughtsandroid.objects.ThoughtObject;
@@ -63,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
 
     public NotificationHandler notificationHandler;
 
+    public FirebaseHandler firebaseHandler;
+
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -85,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
 
         TC.UNSORTED_DIR = new File(getFilesDir().toString() + "/unsorted/");
@@ -95,10 +101,13 @@ public class MainActivity extends AppCompatActivity {
 
         attachEvents();
 
+        swapLayouts(R.id.textViewLayout);
+
         listView = new ListView(this);
         settings = new SettingsHandler(this);
 
         notificationHandler = new NotificationHandler(this);
+        firebaseHandler = new FirebaseHandler(this);
 
     }
 
@@ -218,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         nextButton.setOnClickListener(v -> {
-            // next
+            firebaseHandler.signInUser("aarontburnham@hotmail.com", "greenboy12");
         });
 
 
@@ -315,13 +324,14 @@ public class MainActivity extends AppCompatActivity {
 
             prevButton.setText("<");
             prevButton.setOnClickListener(v -> {
-                // prev
+                // TODO implement
+
             });
 
 
             nextButton.setText(">");
             nextButton.setOnClickListener(v -> {
-                // next
+                // TODO implement
             });
 
 

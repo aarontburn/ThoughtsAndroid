@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "390229435223",
+    "firebase_url": "https://thoughts-4144a-default-rtdb.firebaseio.com",
+    "project_id": "thoughts-4144a",
+    "storage_bucket": "thoughts-4144a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:390229435223:android:8fa08c593494f6ba9a5412",
+        "android_client_info": {
+          "package_name": "com.beanloaf.thoughtsandroid"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "390229435223-e3skbl6ab1fneckiu5olbikpe23redjq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUxuv4YssK1TjZgwSGVBGQTtcnBfMRCp4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "390229435223-e3skbl6ab1fneckiu5olbikpe23redjq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
