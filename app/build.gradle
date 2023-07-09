@@ -43,10 +43,6 @@ dependencies {
 // https://mvnrepository.com/artifact/com.google.guava/guava
     implementation 'com.google.guava:guava:32.0.0-android'
 
-    implementation 'com.android.volley:volley:1.2.1'
-
-
-
 
 
 }
