@@ -2,6 +2,7 @@ package com.beanloaf.thoughtsandroid.objects;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Handler;
 import android.util.AttributeSet;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -72,12 +73,20 @@ public class TagListItem extends androidx.appcompat.widget.AppCompatButton imple
 
             taggedObjects.sort(ThoughtObject::compareTo);
 
-            for (final ThoughtObject obj : taggedObjects) {
+//            new Handler().postAtFrontOfQueue(() -> {
+//                for (final ThoughtObject obj : taggedObjects) {
+//                    final ListItem listItem = new ListItem(context, obj);
+//                    listView.itemList.addView(listItem);
+//
+//                }
+//            });
 
+            for (final ThoughtObject obj : taggedObjects) {
                 final ListItem listItem = new ListItem(context, obj);
                 listView.itemList.addView(listItem);
 
             }
+
 
             listView.selectedTag = this;
 

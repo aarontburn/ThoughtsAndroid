@@ -15,13 +15,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class FirebaseHandler implements PropertyChangeListener {
@@ -46,7 +50,39 @@ public class FirebaseHandler implements PropertyChangeListener {
         this.main = main;
         main.addPropertyChangeListener(this);
 
-        isConnectedToInternet();
+        checkUserFile();
+
+    }
+
+
+    private void checkUserFile() {
+        try {
+            final BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(TC.LOGIN_DIR, "user.json")));
+            final StringBuilder stringBuilder = new StringBuilder();
+            String line = bufferedReader.readLine();
+
+            while (line != null) {
+                stringBuilder.append(line).append("\n");
+                line = bufferedReader.readLine();
+            }
+            bufferedReader.close();
+
+            final JSONObject data = new JSONObject(stringBuilder.toString());
+
+            final String email = (String) data.get("email");
+            final String password = (String) data.get("password");
+
+
+            if (signInUser(email, AuthHandler.sp(password, true))) {
+                start();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+
     }
 
     @Override
@@ -254,6 +290,8 @@ public class FirebaseHandler implements PropertyChangeListener {
 
         if (returningUser != null) {
             user = returningUser;
+
+            saveLoginInformation(email, password);
             return true;
         }
         System.err.println("Error logging in user.");
@@ -271,11 +309,33 @@ public class FirebaseHandler implements PropertyChangeListener {
         final ThoughtUser newUser = AuthHandler.signUp(displayName, email, password);
         if (newUser != null) {
             user = newUser;
+
+            saveLoginInformation(email, password);
+
             return true;
         }
         System.err.println("Error registering new user.");
         return false;
     }
 
+
+    private void saveLoginInformation(final String email, final String password) {
+        System.out.println("Saving login info");
+        try (FileOutputStream fWriter = new FileOutputStream(new File(TC.LOGIN_DIR, "user.json"))) {
+
+            final Map<String, String> textContent = new HashMap<>();
+
+            textContent.put("email", email);
+            textContent.put("password", password != null && password.isEmpty() ? password : AuthHandler.sp(password, false));
+
+            final JSONObject objJson = new JSONObject(textContent);
+            fWriter.write(objJson.toString().getBytes());
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 
 }

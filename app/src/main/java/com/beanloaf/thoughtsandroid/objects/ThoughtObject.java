@@ -184,10 +184,8 @@ public class ThoughtObject implements Comparable<ThoughtObject> {
     }
 
     public String getDate() {
-        if (this.file == null) {
+        if (this.file == null || !this.date.isEmpty()) {
             return this.date;
-        } else if (!this.date.isEmpty()) {
-            return "Created on: " + this.date;
         }
         return TC.DEFAULT_DATE;
     }

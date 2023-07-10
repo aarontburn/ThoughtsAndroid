@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
 
         TC.UNSORTED_DIR = new File(fileDir + "/unsorted/");
         TC.SORTED_DIR = new File(fileDir + "/sorted/");
-        TC.LOGIN_DIR = new File(fileDir + "/res");
+        TC.LOGIN_DIR = new File(fileDir + "/res/");
 
         TC.UNSORTED_DIR.mkdir();
         TC.SORTED_DIR.mkdir();
@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
         selectedFile = obj;
 
         titleTextField.setText(obj.getTitle().equals(TC.DEFAULT_TITLE) ? "" : obj.getTitle());
-        dateText.setText(obj.getDate());
+        dateText.setText(obj.getDate().isEmpty() ? "" : ("Created on : " + obj.getDate()));
         tagTextField.setText(obj.getTag().equals(TC.DEFAULT_TAG) ? "" : obj.getTag());
         bodyTextField.setText(obj.getBody().equals(TC.DEFAULT_BODY) ? "" : obj.getBody());
 

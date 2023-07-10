@@ -9,14 +9,24 @@ import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.beanloaf.thoughtsandroid.database.AuthHandler;
 import com.beanloaf.thoughtsandroid.objects.ThoughtObject;
 import com.beanloaf.thoughtsandroid.objects.ThoughtUser;
 import com.beanloaf.thoughtsandroid.res.TC;
 import com.beanloaf.thoughtsandroid.views.MainActivity;
 import com.beanloaf.thoughtsandroid.R;
 
+import org.json.JSONObject;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import kotlin.NotImplementedError;
 
@@ -198,11 +208,5 @@ public class CloudSettingsHandler implements PropertyChangeListener {
 
     }
 
-    public void setUserInfo(final ThoughtUser user) {
-        if (user == null) return;
 
-        infoDisplayName.setText(user.displayName);
-        infoUserEmail.setText(user.email);
-        infoUserID.setText(user.localId);
-    }
 }

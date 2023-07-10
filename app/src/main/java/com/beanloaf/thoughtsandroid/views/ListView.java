@@ -65,7 +65,8 @@ public class ListView implements PropertyChangeListener {
 
         refreshThoughtLists();
         unsortedThoughtList.callOnClick();
-        main.setTextFields(unsortedThoughtList.get(0));
+
+        main.setTextFields(unsortedThoughtList.size() == 0 ? null : unsortedThoughtList.get(0));
 
     }
 
@@ -78,6 +79,10 @@ public class ListView implements PropertyChangeListener {
                 cloudFeaturesToolbar.setVisibility(View.VISIBLE);
                 cloudDisplayName.setText(user.displayName);
 
+                break;
+
+            case TC.Properties.SIGN_OUT:
+                cloudFeaturesToolbar.setVisibility(View.GONE);
                 break;
         }
 
