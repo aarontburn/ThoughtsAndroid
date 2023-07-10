@@ -121,9 +121,11 @@
 
             <EditText
                 android:id="@+id/loginEmailInput"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="8dp"
                 android:ems="10"
                 android:hint="Email"
                 android:inputType="textEmailAddress"
@@ -136,9 +138,9 @@
 
             <EditText
                 android:id="@+id/loginPasswordInput"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="25dp"
+                android:layout_marginStart="8dp"
                 android:ems="10"
                 android:hint="Password"
                 android:inputType="textPassword"
@@ -146,7 +148,7 @@
                 android:textColorHint="@color/textColor"
                 android:textSize="22sp"
                 app:layout_constraintBottom_toTopOf="@+id/guideline8"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/loginShowPasswordCheckBox"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/loginEmailInput" />
 
@@ -182,7 +184,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                app:layout_constraintGuide_percent="0.4" />
+                app:layout_constraintGuide_percent="0.5" />
+
+            <CheckBox
+                android:id="@+id/loginShowPasswordCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="#CFCFCF"
+                app:layout_constraintBottom_toTopOf="@+id/guideline8"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/loginEmailInput" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -302,39 +313,44 @@
             app:layout_constraintTop_toTopOf="@+id/guideline3">
 
             <TextView
-                android:id="@+id/textView4"
-                android:layout_width="wrap_content"
+                android:id="@+id/infoDisplayName"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:layout_marginStart="16dp"
                 android:text="Name:"
+                android:textAlignment="viewStart"
                 android:textColor="@color/textColor"
                 android:textSize="20sp"
-                app:layout_constraintEnd_toStartOf="@+id/guideline9"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/textView5"
-                android:layout_width="wrap_content"
+                android:id="@+id/infoUserEmail"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
                 android:text="Email:"
+                android:textAlignment="viewStart"
                 android:textColor="@color/textColor"
                 android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/textView6"
-                app:layout_constraintEnd_toStartOf="@+id/guideline9"
+                app:layout_constraintBottom_toTopOf="@+id/infoUserID"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView4" />
+                app:layout_constraintTop_toBottomOf="@+id/infoDisplayName" />
 
             <TextView
-                android:id="@+id/textView6"
-                android:layout_width="wrap_content"
+                android:id="@+id/infoUserID"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
                 android:layout_marginBottom="32dp"
                 android:text="User ID:"
+                android:textAlignment="viewStart"
                 android:textColor="@color/textColor"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toTopOf="@+id/guideline6"
-                app:layout_constraintEnd_toStartOf="@+id/guideline9"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
 
             <Button
@@ -352,7 +368,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                app:layout_constraintGuide_percent="0.5" />
+                app:layout_constraintGuide_percent="0.57" />
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline9"

@@ -1,17 +1,26 @@
 package com.beanloaf.thoughtsandroid.handlers;
 
+import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.beanloaf.thoughtsandroid.objects.ThoughtObject;
+import com.beanloaf.thoughtsandroid.objects.ThoughtUser;
+import com.beanloaf.thoughtsandroid.res.TC;
 import com.beanloaf.thoughtsandroid.views.MainActivity;
 import com.beanloaf.thoughtsandroid.R;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import kotlin.NotImplementedError;
 
-public class CloudSettingsHandler {
+public class CloudSettingsHandler implements PropertyChangeListener {
 
     private final MainActivity main;
 
@@ -38,6 +47,7 @@ public class CloudSettingsHandler {
     private final Button loginButton;
     private final Button loginBackButton;
     private final EditText loginEmailInput, loginPasswordInput;
+    private final CheckBox loginShowPasswordCheckBox;
 
 
     // register layout
@@ -49,13 +59,16 @@ public class CloudSettingsHandler {
 
     // info layout
     private final ConstraintLayout infoLayout;
+    private final TextView infoDisplayName, infoUserID, infoUserEmail;
     private final Button signOutButton;
     /*  ---------  */
+
+    private ThoughtUser user;
 
 
     public CloudSettingsHandler(final MainActivity main) {
         this.main = main;
-
+        main.addPropertyChangeListener(this);
         /*  LAYOUTS  */
         // login register layout
         loginRegisterLayout = main.findViewById(R.id.loginRegisterLayout);
@@ -68,6 +81,7 @@ public class CloudSettingsHandler {
         loginBackButton = main.findViewById(R.id.loginBackButton);
         loginEmailInput = main.findViewById(R.id.loginEmailInput);
         loginPasswordInput = main.findViewById(R.id.loginPasswordInput);
+        loginShowPasswordCheckBox = main.findViewById(R.id.loginShowPasswordCheckBox);
 
         // register layout
         registerLayout = main.findViewById(R.id.registerLayout);
@@ -81,6 +95,9 @@ public class CloudSettingsHandler {
         // info layout
         infoLayout = main.findViewById(R.id.infoLayout);
         signOutButton = main.findViewById(R.id.signOutButton);
+        infoDisplayName = main.findViewById(R.id.infoDisplayName);
+        infoUserID = main.findViewById(R.id.infoUserID);
+        infoUserEmail = main.findViewById(R.id.infoUserEmail);
         /* -------------- */
 
 
@@ -88,6 +105,34 @@ public class CloudSettingsHandler {
         attachEvents();
         swapLayouts(R.id.loginRegisterLayout);
 
+    }
+
+    @Override
+    public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
+        switch (propertyChangeEvent.getPropertyName()) {
+            case TC.Properties.CONNECTED_TO_DATABASE:
+                user = (ThoughtUser) propertyChangeEvent.getNewValue();
+
+                infoDisplayName.setText("Name: \n" + user.displayName);
+                infoUserID.setText("User ID : \n" + user.localId);
+                infoUserEmail.setText("Email : \n" + user.email);
+
+                swapLayouts(R.id.infoLayout);
+                break;
+            case TC.Properties.SIGN_OUT:
+                user = null;
+                swapLayouts(R.id.loginRegisterLayout);
+                break;
+        }
+
+    }
+
+    public void createWindow() {
+        if (user == null) {
+            swapLayouts(R.id.loginRegisterLayout);
+        } else {
+            swapLayouts(R.id.infoLayout);
+        }
     }
 
     private void attachEvents() {
@@ -100,15 +145,30 @@ public class CloudSettingsHandler {
         // login layout
         loginBackButton.setOnClickListener(v -> swapLayouts(R.id.loginRegisterLayout));
         loginButton.setOnClickListener(v -> {
-            main.firebaseHandler.signInUser(loginEmailInput.getText().toString(), loginPasswordInput.getText().toString());
+            main.firePropertyChangeEvent(TC.Properties.LOWER_KEYBOARD);
+            if (main.firebaseHandler.signInUser(loginEmailInput.getText().toString(), loginPasswordInput.getText().toString())) {
+                main.firebaseHandler.start();
+
+            }
+        });
+
+        loginShowPasswordCheckBox.setOnCheckedChangeListener((b, isChecked) -> {
+            loginPasswordInput.setTransformationMethod(isChecked ? null : new PasswordTransformationMethod());
         });
 
         // register layout
         registerBackButton.setOnClickListener(v -> swapLayouts(R.id.loginRegisterLayout));
-        registerButton.setOnClickListener(v -> {});
+        registerButton.setOnClickListener(v -> {
+//            if (main.firebaseHandler.registerNewUser(   )) {
+//                main.firebaseHandler.start();
+//            }
+
+        });
 
         // info layout
-        signOutButton.setOnClickListener(v -> {});
+        signOutButton.setOnClickListener(v -> {
+            main.firePropertyChangeEvent(TC.Properties.SIGN_OUT);
+        });
 
     }
 
@@ -121,6 +181,8 @@ public class CloudSettingsHandler {
             layout = loginLayout;
         } else if (layoutID == R.id.registerLayout) {
             layout = registerLayout;
+        } else if (layoutID == R.id.infoLayout) {
+            layout = infoLayout;
         }
 
 
@@ -134,5 +196,13 @@ public class CloudSettingsHandler {
 
         layout.setVisibility(View.VISIBLE);
 
+    }
+
+    public void setUserInfo(final ThoughtUser user) {
+        if (user == null) return;
+
+        infoDisplayName.setText(user.displayName);
+        infoUserEmail.setText(user.email);
+        infoUserID.setText(user.localId);
     }
 }

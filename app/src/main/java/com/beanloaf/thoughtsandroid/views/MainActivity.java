@@ -26,12 +26,16 @@ import com.beanloaf.thoughtsandroid.database.FirebaseHandler;
 import com.beanloaf.thoughtsandroid.handlers.NotificationHandler;
 import com.beanloaf.thoughtsandroid.handlers.SettingsHandler;
 import com.beanloaf.thoughtsandroid.objects.ThoughtObject;
+import com.beanloaf.thoughtsandroid.objects.ThoughtUser;
 import com.beanloaf.thoughtsandroid.res.TC;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PropertyChangeListener {
 
 
     public ThoughtObject selectedFile;
@@ -60,18 +64,22 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText titleTextField, tagTextField, bodyTextField;
     private TextView dateText;
-    private ListView listView;
+
+
+    public ListView listView;
     public SettingsHandler settings;
-
     public NotificationHandler notificationHandler;
-
     public FirebaseHandler firebaseHandler;
+
+    public PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        addPropertyChangeListener(this);
 
         try { // hides the top bar by default
             getSupportActionBar().hide();
@@ -93,8 +101,16 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.setThreadPolicy(policy);
 
 
-        TC.UNSORTED_DIR = new File(getFilesDir().toString() + "/unsorted/");
-        TC.SORTED_DIR = new File(getFilesDir().toString() + "/sorted/");
+        final String fileDir = getFilesDir().toString();
+
+        TC.UNSORTED_DIR = new File(fileDir + "/unsorted/");
+        TC.SORTED_DIR = new File(fileDir + "/sorted/");
+        TC.LOGIN_DIR = new File(fileDir + "/res");
+
+        TC.UNSORTED_DIR.mkdir();
+        TC.SORTED_DIR.mkdir();
+        TC.LOGIN_DIR.mkdir();
+
 
         findViews();
         addLayoutToList();
@@ -109,6 +125,35 @@ public class MainActivity extends AppCompatActivity {
         notificationHandler = new NotificationHandler(this);
         firebaseHandler = new FirebaseHandler(this);
 
+    }
+
+    @Override
+    public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
+        switch (propertyChangeEvent.getPropertyName()) {
+            case TC.Properties.LOWER_KEYBOARD:
+                final View current = getCurrentFocus();
+                if (current != null) {
+                    current.clearFocus();
+
+                    // Lower keyboard
+                    ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
+                            .hideSoftInputFromWindow(current.getWindowToken(), 0);
+                }
+                break;
+        }
+
+    }
+
+    public void addPropertyChangeListener(final PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+
+    public void firePropertyChangeEvent(final String eventName, final Object obj) {
+        pcs.firePropertyChange(eventName, null, obj);
+    }
+
+    public void firePropertyChangeEvent(final String eventName) {
+        pcs.firePropertyChange(eventName, null, null);
     }
 
     private void findViews() {

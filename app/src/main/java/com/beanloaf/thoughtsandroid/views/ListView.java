@@ -1,17 +1,24 @@
 package com.beanloaf.thoughtsandroid.views;
 
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
+
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.beanloaf.thoughtsandroid.R;
 import com.beanloaf.thoughtsandroid.objects.ListItem;
 import com.beanloaf.thoughtsandroid.objects.TagListItem;
 import com.beanloaf.thoughtsandroid.objects.ThoughtObject;
+import com.beanloaf.thoughtsandroid.objects.ThoughtUser;
 import com.beanloaf.thoughtsandroid.res.TC;
 
 import org.json.JSONObject;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -20,12 +27,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ListView {
+public class ListView implements PropertyChangeListener {
 
 
     private final MainActivity main;
     private final LinearLayout tagList;
     public final LinearLayout itemList;
+
+    private final ConstraintLayout cloudFeaturesToolbar;
 
     public final TagListItem unsortedThoughtList, sortedThoughtList;
 
@@ -33,20 +42,54 @@ public class ListView {
 
     public TagListItem selectedTag;
 
+    private final Button pushButton, pullButton;
+    private final TextView cloudDisplayName;
+
 
     public ListView(final MainActivity main) {
         this.main = main;
+        main.addPropertyChangeListener(this);
+
+
         this.tagList = main.findViewById(R.id.tagList);
         this.itemList = main.findViewById(R.id.itemList);
+        this.cloudFeaturesToolbar = main.findViewById(R.id.cloudFeaturesToolbar);
+        this.pushButton = main.findViewById(R.id.pushButton);
+        this.pullButton = main.findViewById(R.id.pullButton);
+        this.cloudDisplayName = main.findViewById(R.id.cloudDisplayName);
 
         unsortedThoughtList = new TagListItem(main, this, "Unsorted");
         sortedThoughtList = new TagListItem(main, this, "Sorted");
 
+        attachEvents();
 
         refreshThoughtLists();
         unsortedThoughtList.callOnClick();
         main.setTextFields(unsortedThoughtList.get(0));
 
+    }
+
+    @Override
+    public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
+        switch (propertyChangeEvent.getPropertyName()) {
+            case TC.Properties.CONNECTED_TO_DATABASE:
+                final ThoughtUser user = (ThoughtUser) propertyChangeEvent.getNewValue();
+
+                cloudFeaturesToolbar.setVisibility(View.VISIBLE);
+                cloudDisplayName.setText(user.displayName);
+
+                break;
+        }
+
+    }
+
+    private void attachEvents() {
+        pushButton.setOnClickListener(v -> main.firebaseHandler.push());
+
+        pullButton.setOnClickListener(v -> {
+            main.firebaseHandler.pull();
+            refreshThoughtLists();
+        });
     }
 
 

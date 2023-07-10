@@ -13,6 +13,7 @@ public class TC {
     public static File UNSORTED_DIR;
 
     public static File SORTED_DIR;
+    public static File LOGIN_DIR;
 
 
     public static final String DEFAULT_TITLE = "<untitled>";
@@ -28,6 +29,8 @@ public class TC {
     public static final int NOTIFICATION_OPENER_ID = 1;
 
 
+
+
     public class Settings {
         public static final String QUICK_LAUNCH = "Quick-launch notification";
 
@@ -38,6 +41,12 @@ public class TC {
         public static final String LIGHT_MODE = "Light mode";
 
 
+    }
+
+    public class Properties {
+        public static final String CONNECTED_TO_DATABASE = "connected to database";
+        public static final String LOWER_KEYBOARD = "lower keyboard";
+        public static final String SIGN_OUT = "sign out";
     }
 
 

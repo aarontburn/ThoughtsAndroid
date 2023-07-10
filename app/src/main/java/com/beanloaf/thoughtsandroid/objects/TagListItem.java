@@ -131,7 +131,7 @@ public class TagListItem extends androidx.appcompat.widget.AppCompatButton imple
     public ThoughtObject get(final int index) {
         try {
             return this.taggedObjects.get(index);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (Exception e) {
             return this.taggedObjects.size() > 0 ? this.taggedObjects.get(0) : null;
         }
 

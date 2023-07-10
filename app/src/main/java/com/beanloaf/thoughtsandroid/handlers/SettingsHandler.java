@@ -62,6 +62,7 @@ public class SettingsHandler {
         openCloudSettingsButton.setOnClickListener(v -> {
             generalSettingsLayout.setVisibility(View.GONE);
             cloudSettingsLayout.setVisibility(View.VISIBLE);
+            cloudSettingsHandler.createWindow();
         });
 
     }

@@ -1,13 +1,5 @@
 package com.beanloaf.thoughtsandroid.database;
 
-import android.content.Context;
-
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.beanloaf.thoughtsandroid.objects.ThoughtUser;
 import com.google.common.io.BaseEncoding;
 import org.apache.commons.codec.binary.Base32;
@@ -64,7 +56,6 @@ public final class AuthHandler {
                 responseBuilder.append(line);
             }
 
-            System.out.println(responseBuilder.toString() + "here");
 
             final JSONObject json = new JSONObject(responseBuilder.toString());
 
