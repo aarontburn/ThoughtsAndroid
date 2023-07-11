@@ -59,16 +59,6 @@ public class ThoughtObject implements Comparable<ThoughtObject> {
 
     }
 
-
-    public ThoughtObject(final MainActivity main) {
-        this.dir = main.getFilesDir().toString() + "/unsorted/"; //   /data/user/0/com.beanloaf.thoughtsandroid/files/
-        this.title = "";
-        this.tag = "";
-        this.body = "";
-        this.file = createFileName();
-        this.isSorted = false;
-    }
-
     public void setParent(final TagListItem parent) {
         this.parent = parent;
     }
@@ -76,8 +66,6 @@ public class ThoughtObject implements Comparable<ThoughtObject> {
     public TagListItem getParent() {
         return this.parent;
     }
-
-
 
     public void save() {
 
@@ -230,15 +218,15 @@ public class ThoughtObject implements Comparable<ThoughtObject> {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(final Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
 
-        final ThoughtObject that = (ThoughtObject) o;
+        final ThoughtObject that = (ThoughtObject) obj;
         return Objects.equals(dir, that.dir)
                 && Objects.equals(file, that.file)
                 && Objects.equals(title, that.title)
