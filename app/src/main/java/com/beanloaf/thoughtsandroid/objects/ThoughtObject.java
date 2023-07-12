@@ -214,7 +214,7 @@ public class ThoughtObject implements Comparable<ThoughtObject> {
 
     @Override
     public String toString() {
-        return "Title: " + title + " Tag: " + tag + " Body: " + body + " Date/Time: " + date + " File: " + file;
+        return "[Title: " + title + " Tag: " + tag + " Body: " + body + " Date/Time: " + date + " File: " + file + "]";
     }
 
     @Override
@@ -241,7 +241,7 @@ public class ThoughtObject implements Comparable<ThoughtObject> {
     }
 
     @Override
-    public int compareTo(ThoughtObject thoughtObject) {
+    public int compareTo(final ThoughtObject thoughtObject) {
         return this.title.compareToIgnoreCase(thoughtObject.getTitle());
     }
 }

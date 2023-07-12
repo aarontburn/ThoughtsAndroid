@@ -2,6 +2,7 @@ package com.beanloaf.thoughtsandroid.database;
 
 import com.beanloaf.thoughtsandroid.objects.ThoughtUser;
 import com.google.common.io.BaseEncoding;
+
 import org.apache.commons.codec.binary.Base32;
 import org.json.JSONObject;
 
@@ -13,9 +14,6 @@ import java.net.URL;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
-
-
-
 
 
 public final class AuthHandler {
@@ -79,8 +77,8 @@ public final class AuthHandler {
     }
 
     public static ThoughtUser signUp(final String userName,
-                                                     final String email,
-                                                     final String password) {
+                                     final String email,
+                                     final String password) {
         try {
             final URL url = new URL("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + new String(b32.decode(KEY)));
 
