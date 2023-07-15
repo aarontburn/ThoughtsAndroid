@@ -227,11 +227,6 @@ public class ListView implements PropertyChangeListener {
 
     }
 
-    public void getNext() {
-
-
-    }
-
     private void removeTagFromTagList(final ThoughtObject obj) {
         final TagListItem list = obj.getParent();
 
@@ -255,9 +250,8 @@ public class ListView implements PropertyChangeListener {
         if (list == null) { // tag doesn't exist in list yet
             list = new TagListItem(main, this, tag);
             thoughtListByTag.put(tag, list);
-            int index = getAlphaIndex(list);
 
-            tagList.addView(list, index);
+            tagList.addView(list, getAlphaIndex(list));
 
         }
         list.add(obj);
@@ -292,15 +286,11 @@ public class ListView implements PropertyChangeListener {
         }
 
         if (midItem == null || nextItem == null) {
-            return mid + 1;
+            return mid;
         }
 
         final int midToTag = tag.compareToIgnoreCase(midItem.getTag());
         final int nextToTag = tag.compareToIgnoreCase(nextItem.getTag());
-
-//        System.out.println("Left: " + left + " Right: " + right + " Mid: " + mid);
-//        System.out.println("Comparing " + tag + " to " + midItem.getTag() + " and " + nextItem.getTag());
-//        System.out.println(tag + " : " + midItem.getTag() + ": " + midToTag + " | " + tag + " : " + nextItem.getTag() + ": " + nextToTag);
 
 
         if (midToTag < 0) {
