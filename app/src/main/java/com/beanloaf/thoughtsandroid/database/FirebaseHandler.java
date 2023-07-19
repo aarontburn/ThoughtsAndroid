@@ -82,7 +82,6 @@ public class FirebaseHandler implements PropertyChangeListener {
         }
 
 
-
     }
 
     @Override
@@ -102,7 +101,6 @@ public class FirebaseHandler implements PropertyChangeListener {
             refreshItems();
 
             main.firePropertyChangeEvent(TC.Properties.CONNECTED_TO_DATABASE, user);
-            System.out.println(cloudThoughtsList);
         }
 
     }
@@ -134,52 +132,55 @@ public class FirebaseHandler implements PropertyChangeListener {
         }
         cloudThoughtsList = new ArrayList<>();
 
-        try {
-            final HttpURLConnection connection = (HttpURLConnection) new URL(apiURL).openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Accept", "application/json");
 
-            final int responseCode = connection.getResponseCode();
+        new Thread(() -> {
+            try {
+                final HttpURLConnection connection = (HttpURLConnection) new URL(apiURL).openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("Accept", "application/json");
 
-            if (responseCode != 200) {
-                if (responseCode == 401) {
-                    System.err.println("Invalid credentials at refreshItems()");
-                    return;
-                } else {
-                    throw new RuntimeException("Failed : HTTP error code : "
-                            + connection.getResponseCode());
+                final int responseCode = connection.getResponseCode();
+
+                if (responseCode != 200) {
+                    if (responseCode == 401) {
+                        System.err.println("Invalid credentials at refreshItems()");
+                        return;
+                    } else {
+                        throw new RuntimeException("Failed : HTTP error code : "
+                                + connection.getResponseCode());
+                    }
                 }
+
+                final BufferedReader responseReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                final StringBuilder responseBuilder = new StringBuilder();
+                String line;
+                while ((line = responseReader.readLine()) != null) {
+                    responseBuilder.append(line);
+                }
+                responseReader.close();
+
+                final JSONObject json = new JSONObject(responseBuilder.toString());
+
+
+                final Base32 b32 = new Base32();
+
+                for (Iterator<String> it = json.keys(); it.hasNext(); ) {
+                    final String path = it.next();
+
+
+                    final String filePath = new String(b32.decode(path)).replace("_", " ") + ".json";
+                    final String title = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Title")));
+                    final String tag = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Tag")));
+                    final String date = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Date")));
+                    final String body = new String(b32.decode(((String) ((JSONObject) json.get(path)).get("Body"))
+                            .replace("\\n", "\n").replace("\\t", "\t")));
+                    cloudThoughtsList.add(new ThoughtObject(main, true, title, date, tag, body, new File(filePath)));
+                }
+                connection.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            final BufferedReader responseReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            final StringBuilder responseBuilder = new StringBuilder();
-            String line;
-            while ((line = responseReader.readLine()) != null) {
-                responseBuilder.append(line);
-            }
-            responseReader.close();
-
-            final JSONObject json = new JSONObject(responseBuilder.toString());
-
-
-            final Base32 b32 = new Base32();
-
-            for (Iterator<String> it = json.keys(); it.hasNext(); ) {
-                final String path = it.next();
-
-
-                final String filePath = new String(b32.decode(path)).replace("_", " ") + ".json";
-                final String title = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Title")));
-                final String tag = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Tag")));
-                final String date = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Date")));
-                final String body = new String(b32.decode(((String) ((JSONObject) json.get(path)).get("Body"))
-                        .replace("\\n", "\n").replace("\\t", "\t")));
-                cloudThoughtsList.add(new ThoughtObject(main, true, title, date, tag, body, new File(filePath)));
-            }
-            connection.disconnect();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        }).start();
 
 
     }
@@ -219,12 +220,8 @@ public class FirebaseHandler implements PropertyChangeListener {
 
         new Thread(() -> {
             try {
-                final File[] sortedFileDirectory = TC.SORTED_DIR.listFiles();
-                for (final File file : Objects.requireNonNull(sortedFileDirectory)) {
-                    final ThoughtObject tObj = this.main.listView.readFileContents(file, true);
-                    if (tObj != null) {
-                        addEntryIntoDatabase(tObj);
-                    }
+                for (final ThoughtObject obj : main.listView.sortedThoughtList.getList()) {
+                    addEntryIntoDatabase(obj);
                 }
                 refreshItems();
             } catch (Exception e) {

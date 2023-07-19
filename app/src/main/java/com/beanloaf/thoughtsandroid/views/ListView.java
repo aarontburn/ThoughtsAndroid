@@ -376,10 +376,8 @@ public class ListView implements PropertyChangeListener {
         for (final ThoughtObject obj : selectedTag.getList()) {
             final ListItem listItem = itemList.findViewWithTag(obj.getFile());
 
-
             if (listItem == null) {
                 itemList.addView(new ListItem(main, obj));
-
 
             } else if (!String.valueOf(listItem.getText()).equals(obj.getTitle())) {
                 listItem.setText(obj.getTitle());
