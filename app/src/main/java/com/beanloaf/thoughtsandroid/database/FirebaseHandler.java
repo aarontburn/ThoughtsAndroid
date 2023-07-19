@@ -1,6 +1,5 @@
 package com.beanloaf.thoughtsandroid.database;
 
-import android.view.View;
 
 import com.beanloaf.thoughtsandroid.objects.ThoughtObject;
 import com.beanloaf.thoughtsandroid.objects.ThoughtUser;
@@ -26,7 +25,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class FirebaseHandler implements PropertyChangeListener {
 
@@ -43,15 +41,22 @@ public class FirebaseHandler implements PropertyChangeListener {
 
     private boolean isOnline;
 
-    private List<ThoughtObject> cloudThoughtsList;
+    private final List<ThoughtObject> cloudThoughtsList = new ArrayList<>();
+
+    private boolean isPushing;
+    private boolean isPulling;
 
 
     public FirebaseHandler(final MainActivity main) {
         this.main = main;
         main.addPropertyChangeListener(this);
 
-        checkUserFile();
 
+    }
+
+    /*  This should be ran inside a thread. */
+    public void startup() {
+        checkUserFile();
     }
 
 
@@ -96,20 +101,25 @@ public class FirebaseHandler implements PropertyChangeListener {
 
 
     public void start() {
-        if (isConnectedToDatabase()) {
-            registerURL();
-            refreshItems();
+        new Thread(() -> {
 
-            main.firePropertyChangeEvent(TC.Properties.CONNECTED_TO_DATABASE, user);
-        }
+            if (isConnectedToDatabase()) {
+                registerURL();
+                refreshItems();
 
+                main.runOnUiThread(() -> main.firePropertyChangeEvent(TC.Properties.CONNECTED_TO_DATABASE, user));
+            }
+        }).start();
     }
 
     public void signOut() {
         user = null;
         isOnline = false;
-        cloudThoughtsList = null;
+        cloudThoughtsList.clear();
     }
+
+
+
 
     public boolean isConnectedToDatabase() {
         return isConnectedToInternet() && user != null;
@@ -125,71 +135,77 @@ public class FirebaseHandler implements PropertyChangeListener {
         }
     }
 
-
-    private void refreshItems() {
-        if (!isOnline) {
-            return;
+    public void reconnectToDatabase() {
+        if (refreshItems() == null) {
+            checkUserFile();
         }
-        cloudThoughtsList = new ArrayList<>();
+    }
 
 
-        new Thread(() -> {
-            try {
-                final HttpURLConnection connection = (HttpURLConnection) new URL(apiURL).openConnection();
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("Accept", "application/json");
+    private Boolean refreshItems() {
+        if (!isOnline) {
+            return false;
+        }
+        cloudThoughtsList.clear();
 
-                final int responseCode = connection.getResponseCode();
+        try {
+            final HttpURLConnection connection = (HttpURLConnection) new URL(apiURL).openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Accept", "application/json");
 
-                if (responseCode != 200) {
-                    if (responseCode == 401) {
-                        System.err.println("Invalid credentials at refreshItems()");
-                        return;
-                    } else {
-                        throw new RuntimeException("Failed : HTTP error code : "
-                                + connection.getResponseCode());
-                    }
+            final int responseCode = connection.getResponseCode();
+
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    return null;
+                } else {
+                    throw new RuntimeException("Failed : HTTP error code : "
+                            + connection.getResponseCode());
                 }
-
-                final BufferedReader responseReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                final StringBuilder responseBuilder = new StringBuilder();
-                String line;
-                while ((line = responseReader.readLine()) != null) {
-                    responseBuilder.append(line);
-                }
-                responseReader.close();
-
-                final JSONObject json = new JSONObject(responseBuilder.toString());
-
-
-                final Base32 b32 = new Base32();
-
-                for (Iterator<String> it = json.keys(); it.hasNext(); ) {
-                    final String path = it.next();
-
-
-                    final String filePath = new String(b32.decode(path)).replace("_", " ") + ".json";
-                    final String title = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Title")));
-                    final String tag = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Tag")));
-                    final String date = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Date")));
-                    final String body = new String(b32.decode(((String) ((JSONObject) json.get(path)).get("Body"))
-                            .replace("\\n", "\n").replace("\\t", "\t")));
-                    cloudThoughtsList.add(new ThoughtObject(main, true, title, date, tag, body, new File(filePath)));
-                }
-                connection.disconnect();
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        }).start();
+
+            final BufferedReader responseReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            final StringBuilder responseBuilder = new StringBuilder();
+            String line;
+            while ((line = responseReader.readLine()) != null) {
+                responseBuilder.append(line);
+            }
+            responseReader.close();
+
+            JSONObject json;
+
+            try {
+                json = new JSONObject(responseBuilder.toString());
+            } catch (Exception e) { // Will be thrown if there isn't anything at the database for this user yet
+                return false;
+            }
+
+            final Base32 b32 = new Base32();
+
+            for (Iterator<String> it = json.keys(); it.hasNext(); ) {
+                final String path = it.next();
 
 
+                final String filePath = new String(b32.decode(path)).replace("_", " ") + ".json";
+                final String title = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Title")));
+                final String tag = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Tag")));
+                final String date = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Date")));
+                final String body = new String(b32.decode(((String) ((JSONObject) json.get(path)).get("Body"))
+                        .replace("\\n", "\n").replace("\\t", "\t")));
+                cloudThoughtsList.add(new ThoughtObject(main, true, title, date, tag, body, new File(filePath)));
+            }
+            connection.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return true;
     }
 
     private void registerURL() {
         try {
-            if (user == null) {
+            if (user == null)
                 throw new IllegalArgumentException("User cannot be null when registering URL.");
-            }
 
             apiURL = DATABASE_URL + user.localId + ".json?auth=" + user.idToken;
 
@@ -200,29 +216,61 @@ public class FirebaseHandler implements PropertyChangeListener {
     }
 
     public boolean pull() {
-        if (cloudThoughtsList == null || cloudThoughtsList.size() == 0) {
+        if (isPulling || cloudThoughtsList.size() == 0) {
             return false;
         }
 
-        refreshItems();
-        for (final ThoughtObject obj : cloudThoughtsList) {
-            obj.save();
-        }
+        main.firePropertyChangeEvent(TC.Properties.PULL_IN_PROGRESS, true);
+        isPulling = true;
+        new Thread(() -> {
+            reconnectToDatabase();
+            for (final ThoughtObject obj : cloudThoughtsList) {
+                final ThoughtObject listObj = main.listView.sortedThoughtList.getByFile(obj.getFile());
+
+                if (listObj != null) { // already exists
+                    listObj.setTitle(obj.getTitle());
+                    listObj.setTag(obj.getTag());
+                    listObj.setBody(obj.getBody());
+                    listObj.save();
+
+                } else {
+                    obj.save();
+
+                }
+            }
+            main.runOnUiThread(() -> {
+                main.firePropertyChangeEvent(TC.Properties.PULL_IN_PROGRESS, false);
+                main.listView.refreshThoughtLists();
+            });
+            isPulling = false;
+
+        }).start();
 
         return true;
     }
 
     public boolean push() {
+        if (isPushing) return false;
+
         if (!isConnectedToDatabase()) {
             System.out.println("Not connected to the internet!");
             return false;
         }
+
+
+        main.firePropertyChangeEvent(TC.Properties.PUSH_IN_PROGRESS, true);
+        isPushing = true;
 
         new Thread(() -> {
             try {
                 for (final ThoughtObject obj : main.listView.sortedThoughtList.getList()) {
                     addEntryIntoDatabase(obj);
                 }
+
+                System.out.println("Finished pushing files");
+
+                main.runOnUiThread(() -> main.firePropertyChangeEvent(TC.Properties.PUSH_IN_PROGRESS, false));
+                isPushing = false;
                 refreshItems();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -231,6 +279,8 @@ public class FirebaseHandler implements PropertyChangeListener {
         return true;
     }
 
+
+    // This should be ran inside a thread
     private void addEntryIntoDatabase(final ThoughtObject obj) {
         if (!isConnectedToDatabase()) {
             System.out.println("Not connected to the internet!");
@@ -262,17 +312,48 @@ public class FirebaseHandler implements PropertyChangeListener {
 
             final int responseCode = connection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                System.out.println("Data successfully inserted to the database.");
+                System.out.println("\"" + obj.getTitle() + "\" successfully inserted to the database.");
             } else {
-                System.out.println("Failed to insert data to the database. Response code: " + responseCode);
+                System.out.println("Failed to \"" + obj.getTitle() + "\" data to the database. Response code: " + responseCode);
             }
-
-            refreshItems();
 
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
+    }
+
+    public void removeEntryFromDatabase(final ThoughtObject obj) {
+        if (!isConnectedToDatabase()) {
+            System.out.println("Not connected to the internet!");
+            return;
+        }
+
+
+        new Thread(() -> {
+            try {
+                reconnectToDatabase();
+
+                final String path = obj.getFile().replace(".json", "").replace(" ", "_");
+                final URL url = new URL(DATABASE_URL + user.localId + "/" + BaseEncoding.base32().encode(path.getBytes()).replace("=", "") + ".json?auth=" + user.idToken);
+                final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("DELETE");
+
+                // Check if the DELETE request was successful
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    System.out.println("Removed \"" + obj.getTitle() + "\" from database.");
+                } else {
+                    System.out.println("Failed to delete database entry.");
+                }
+
+                connection.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            refreshItems();
+        }).start();
 
 
     }
@@ -287,7 +368,6 @@ public class FirebaseHandler implements PropertyChangeListener {
 
         if (returningUser != null) {
             user = returningUser;
-
             saveLoginInformation(email, password);
             return true;
         }
@@ -306,9 +386,7 @@ public class FirebaseHandler implements PropertyChangeListener {
         final ThoughtUser newUser = AuthHandler.signUp(displayName, email, password);
         if (newUser != null) {
             user = newUser;
-
             saveLoginInformation(email, password);
-
             return true;
         }
         System.err.println("Error registering new user.");

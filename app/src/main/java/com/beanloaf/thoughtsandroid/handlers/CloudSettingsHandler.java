@@ -9,26 +9,14 @@ import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import com.beanloaf.thoughtsandroid.database.AuthHandler;
-import com.beanloaf.thoughtsandroid.objects.ThoughtObject;
 import com.beanloaf.thoughtsandroid.objects.ThoughtUser;
 import com.beanloaf.thoughtsandroid.res.TC;
 import com.beanloaf.thoughtsandroid.views.MainActivity;
 import com.beanloaf.thoughtsandroid.R;
 
-import org.json.JSONObject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-
-import kotlin.NotImplementedError;
 
 public class CloudSettingsHandler implements PropertyChangeListener {
 
@@ -121,6 +109,8 @@ public class CloudSettingsHandler implements PropertyChangeListener {
     public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
         switch (propertyChangeEvent.getPropertyName()) {
             case TC.Properties.CONNECTED_TO_DATABASE:
+                main.firePropertyChangeEvent(TC.Properties.LOWER_KEYBOARD);
+
                 user = (ThoughtUser) propertyChangeEvent.getNewValue();
 
                 infoDisplayName.setText("Name: \n" + user.displayName);
@@ -155,10 +145,11 @@ public class CloudSettingsHandler implements PropertyChangeListener {
         // login layout
         loginBackButton.setOnClickListener(v -> swapLayouts(R.id.loginRegisterLayout));
         loginButton.setOnClickListener(v -> {
-            main.firePropertyChangeEvent(TC.Properties.LOWER_KEYBOARD);
-            if (main.firebaseHandler.signInUser(loginEmailInput.getText().toString(), loginPasswordInput.getText().toString())) {
-                main.firebaseHandler.start();
+            final String email = loginEmailInput.getText().toString();
+            final String password = loginPasswordInput.getText().toString();
 
+            if (main.firebaseHandler.signInUser(email, password)) {
+                main.firebaseHandler.start();
             }
         });
 
@@ -169,16 +160,26 @@ public class CloudSettingsHandler implements PropertyChangeListener {
         // register layout
         registerBackButton.setOnClickListener(v -> swapLayouts(R.id.loginRegisterLayout));
         registerButton.setOnClickListener(v -> {
-//            if (main.firebaseHandler.registerNewUser(   )) {
-//                main.firebaseHandler.start();
-//            }
+
+            final String name = registerDisplayNameInput.getText().toString();
+            final String email = registerEmailInput.getText().toString();
+            final String password = registerPasswordInput.getText().toString();
+            final String reenterPassword = registerReenterPasswordInput.getText().toString();
+
+            if (!password.equals(reenterPassword)) {
+                System.err.println("Passwords do not match");
+                return;
+            }
+
+
+            if (main.firebaseHandler.registerNewUser(name, email, password)) {
+                main.firebaseHandler.start();
+            }
 
         });
 
         // info layout
-        signOutButton.setOnClickListener(v -> {
-            main.firePropertyChangeEvent(TC.Properties.SIGN_OUT);
-        });
+        signOutButton.setOnClickListener(v -> main.firePropertyChangeEvent(TC.Properties.SIGN_OUT));
 
     }
 

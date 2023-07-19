@@ -31,7 +31,7 @@ public class TC {
 
 
 
-    public class Settings {
+    public static class Settings {
         public static final String QUICK_LAUNCH = "Quick-launch notification";
 
         public static final String PUSH_ON_EXIT = "Push on exit";
@@ -43,10 +43,12 @@ public class TC {
 
     }
 
-    public class Properties {
+    public static class Properties {
         public static final String CONNECTED_TO_DATABASE = "connected to database";
         public static final String LOWER_KEYBOARD = "lower keyboard";
         public static final String SIGN_OUT = "sign out";
+        public static final String PUSH_IN_PROGRESS = "push in progress";
+        public static final String PULL_IN_PROGRESS = "pull in progress";
     }
 
 

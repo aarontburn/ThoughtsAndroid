@@ -66,6 +66,8 @@ public class ListView implements PropertyChangeListener {
         refreshThoughtLists();
         unsortedThoughtList.callOnClick();
 
+        cloudFeaturesToolbar.setVisibility(View.GONE);
+
         main.setTextFields(unsortedThoughtList.size() == 0 ? null : unsortedThoughtList.get(0));
 
     }

@@ -146,6 +146,20 @@ public class TagListItem extends androidx.appcompat.widget.AppCompatButton imple
 
     }
 
+    public ThoughtObject getByFile(final String file) {
+        List<ThoughtObject> copyOfTaggedObjects;
+        synchronized (taggedObjects) {
+            copyOfTaggedObjects = new ArrayList<>(taggedObjects);
+        }
+
+        for (final ThoughtObject obj : copyOfTaggedObjects) {
+            if (obj.getFile().equals(file)) {
+                return obj;
+            }
+        }
+        return null;
+    }
+
     public int size() {
         return this.taggedObjects.size();
     }

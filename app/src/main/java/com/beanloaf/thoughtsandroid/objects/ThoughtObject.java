@@ -67,10 +67,9 @@ public class ThoughtObject implements Comparable<ThoughtObject> {
         return this.parent;
     }
 
-    public void save() {
-
+    public Boolean save() {
         if (file == null) {
-            return;
+            return null;
         }
 
         final File file = new File(this.dir, this.file);
@@ -88,6 +87,8 @@ public class ThoughtObject implements Comparable<ThoughtObject> {
                 data.put("body", this.body);
                 fWriter.write(new JSONObject(data).toString().getBytes());
 
+                return true;
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -97,6 +98,7 @@ public class ThoughtObject implements Comparable<ThoughtObject> {
             e.printStackTrace();
         }
 
+        return false;
 
     }
 

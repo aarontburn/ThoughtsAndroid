@@ -1,0 +1,5 @@
+Features to implement:
+    -   Local-only files
+    -   Settings:
+        -   Enlarge desc on focus
+    -   Registering window looks bad once a text field is focused

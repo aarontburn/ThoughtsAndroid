@@ -18,6 +18,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TableRow;
 import android.widget.TextView;
 
@@ -57,14 +58,15 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
     private Button sortButton, newButton, deleteButton, doneButton;
     private Button prevButton, nextButton;
     private CheckBox lockTitleCheckBox, lockTagCheckBox;
-
     private TableRow buttonContainer;
+    private ProgressBar pushProgressBar, pullProgressBar;
 
+
+    /*  Text fields     */
     private TextView titleGhostText, tagGhostText, bodyGhostText;
-
     private EditText titleTextField, tagTextField, bodyTextField;
     private TextView dateText;
-
+    /*  ------------    */
 
     public ListView listView;
     public SettingsHandler settings;
@@ -105,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
 
         TC.UNSORTED_DIR = new File(fileDir + "/unsorted/");
         TC.SORTED_DIR = new File(fileDir + "/sorted/");
-        TC. LOGIN_DIR = new File(fileDir + "/res/");
+        TC.LOGIN_DIR = new File(fileDir + "/res/");
 
         TC.UNSORTED_DIR.mkdir();
         TC.SORTED_DIR.mkdir();
@@ -124,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
 
         notificationHandler = new NotificationHandler(this);
         firebaseHandler = new FirebaseHandler(this);
+        new Thread(() -> firebaseHandler.startup()).start();
 
     }
 
@@ -139,6 +142,12 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
                     ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
                             .hideSoftInputFromWindow(current.getWindowToken(), 0);
                 }
+                break;
+            case TC.Properties.PUSH_IN_PROGRESS:
+                pushProgressBar.setVisibility((boolean) propertyChangeEvent.getNewValue() ? View.VISIBLE : View.GONE);
+                break;
+            case TC.Properties.PULL_IN_PROGRESS:
+                pullProgressBar.setVisibility((boolean) propertyChangeEvent.getNewValue() ? View.VISIBLE : View.GONE);
                 break;
         }
 
@@ -157,6 +166,9 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
     }
 
     private void findViews() {
+
+        pushProgressBar = findViewById(R.id.pushProgressBar);
+        pullProgressBar = findViewById(R.id.pullProgressBar);
 
         // Layouts
         textViewLayout = findViewById(R.id.textViewLayout);
@@ -189,8 +201,6 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
         tagTextField = findViewById(R.id.inputTagText);
         bodyTextField = findViewById(R.id.inputBodyText);
     }
-
-
 
 
     public void setTextFields(ThoughtObject obj) {
@@ -233,7 +243,8 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
 
 
     private void attachEvents() {
-
+        pushProgressBar.setVisibility(View.GONE);
+        pullProgressBar.setVisibility(View.GONE);
 
         sortButton.setOnClickListener(v -> listView.sort(selectedFile));
 
@@ -272,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
         });
 
         nextButton.setOnClickListener(v -> {
-            
+
         });
 
 
@@ -348,6 +359,11 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
             dateText.setVisibility(isVisible);
             buttonContainer.setVisibility(isVisible);
             doneButton.setVisibility(view.isFocused() ? View.VISIBLE : View.GONE);
+
+            lockTitleCheckBox.setVisibility(isVisible);
+            lockTagCheckBox.setVisibility(isVisible);
+
+
             if (selectedFile != null) {
                 selectedFile.setBody(String.valueOf(bodyTextField.getText()));
                 saveCurrentThoughtObject();
@@ -399,7 +415,6 @@ public class MainActivity extends AppCompatActivity implements PropertyChangeLis
             settingsLayout.setVisibility(View.VISIBLE);
 
         }
-
 
 
     }
