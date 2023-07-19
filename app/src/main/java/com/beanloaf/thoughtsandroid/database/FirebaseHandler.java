@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -185,12 +186,14 @@ public class FirebaseHandler implements PropertyChangeListener {
             for (Iterator<String> it = json.keys(); it.hasNext(); ) {
                 final String path = it.next();
 
+                final String payload = json.get(path).toString();
+                final JSONObject data = new JSONObject(payload.substring(0, payload.length() - 1));
 
-                final String filePath = new String(b32.decode(path)).replace("_", " ") + ".json";
-                final String title = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Title")));
-                final String tag = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Tag")));
-                final String date = new String(b32.decode((String) ((JSONObject) json.get(path)).get("Date")));
-                final String body = new String(b32.decode(((String) ((JSONObject) json.get(path)).get("Body"))
+                final String filePath = new String(b32.decode((String) path)).replace("_", " ") + ".json";
+                final String title = new String(b32.decode((String) data.get("Title")));
+                final String tag = new String(b32.decode((String) data.get("Tag")));
+                final String date = new String(b32.decode((String) data.get("Date")));
+                final String body = new String(b32.decode(((String) data.get("Body"))
                         .replace("\\n", "\n").replace("\\t", "\t")));
                 cloudThoughtsList.add(new ThoughtObject(main, true, title, date, tag, body, new File(filePath)));
             }
@@ -250,6 +253,10 @@ public class FirebaseHandler implements PropertyChangeListener {
     }
 
     public boolean push() {
+        return push(main.listView.sortedThoughtList.getList().toArray(new ThoughtObject[0]));
+    }
+
+    private boolean push(final ThoughtObject[] objList) {
         if (isPushing) return false;
 
         if (!isConnectedToDatabase()) {
@@ -263,15 +270,43 @@ public class FirebaseHandler implements PropertyChangeListener {
 
         new Thread(() -> {
             try {
-                for (final ThoughtObject obj : main.listView.sortedThoughtList.getList()) {
-                    addEntryIntoDatabase(obj);
+                reconnectToDatabase();
+
+                final JSONObject batchPayload = new JSONObject();
+                for (final ThoughtObject obj : objList) {
+                    if (obj != null) {
+                        final String[] payload =  convertThoughtObjectToJson(obj);
+                        batchPayload.put(payload[0], payload[1]);
+
+                    }
                 }
 
-                System.out.println("Finished pushing files");
+                final HttpURLConnection connection = (HttpURLConnection) new URL(apiURL).openConnection();
+                connection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("Authorization", "Bearer " + user.idToken);
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+
+                final OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+                writer.write(batchPayload.toString());
+                writer.flush();
+                writer.close();
+
+                final int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    System.out.println("Successfully inserted all files to the database.");
+                } else {
+                    System.out.println("Failed to insert all files to the database. Response code: " + responseCode);
+                }
+
+                refreshItems();
+
 
                 main.runOnUiThread(() -> main.firePropertyChangeEvent(TC.Properties.PUSH_IN_PROGRESS, false));
                 isPushing = false;
-                refreshItems();
+                System.out.println("Finished pushing files");
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -324,6 +359,20 @@ public class FirebaseHandler implements PropertyChangeListener {
 
 
     }
+
+    private String[] convertThoughtObjectToJson(final ThoughtObject obj) {
+        final String path = obj.getFile().replace(".json", "").replace(" ", "_");
+
+        final String json = String.format("{\"Body\": \"%s\", \"Date\": \"%s\", \"Tag\": \"%s\", \"Title\": \"%s\"}}",
+                BaseEncoding.base32().encode(obj.getBody().getBytes()),
+                BaseEncoding.base32().encode(obj.getDate().getBytes()),
+                BaseEncoding.base32().encode(obj.getTag().getBytes()),
+                BaseEncoding.base32().encode(obj.getTitle().replace("\n", "\\\\n")
+                        .replace("\t", "\\\\t").getBytes()));
+
+        return new String[]{BaseEncoding.base32().encode(path.getBytes()).replace("=", ""), json};
+    }
+
 
     public void removeEntryFromDatabase(final ThoughtObject obj) {
         if (!isConnectedToDatabase()) {
