@@ -173,8 +173,8 @@ public class FirebaseHandler implements PropertyChangeListener {
             }
             responseReader.close();
 
-            JSONObject json;
 
+            JSONObject json;
             try {
                 json = new JSONObject(responseBuilder.toString());
             } catch (Exception e) { // Will be thrown if there isn't anything at the database for this user yet
@@ -187,9 +187,9 @@ public class FirebaseHandler implements PropertyChangeListener {
                 final String path = it.next();
 
                 final String payload = json.get(path).toString();
-                final JSONObject data = new JSONObject(payload.substring(0, payload.length() - 1));
+                final JSONObject data = new JSONObject(payload);
 
-                final String filePath = new String(b32.decode((String) path)).replace("_", " ") + ".json";
+                final String filePath = new String(b32.decode(path)).replace("_", " ") + ".json";
                 final String title = new String(b32.decode((String) data.get("Title")));
                 final String tag = new String(b32.decode((String) data.get("Tag")));
                 final String date = new String(b32.decode((String) data.get("Date")));
@@ -315,55 +315,10 @@ public class FirebaseHandler implements PropertyChangeListener {
     }
 
 
-    // This should be ran inside a thread
-    private void addEntryIntoDatabase(final ThoughtObject obj) {
-        if (!isConnectedToDatabase()) {
-            System.out.println("Not connected to the internet!");
-            return;
-        }
-
-        try {
-            final String path = obj.getFile().replace(".json", "").replace(" ", "_");
-
-            final String json = String.format("{\"%s\": { \"Body\": \"%s\", \"Date\": \"%s\", \"Tag\": \"%s\", \"Title\": \"%s\"}}",
-                    BaseEncoding.base32().encode(path.getBytes()).replace("=", ""),
-                    BaseEncoding.base32().encode(obj.getBody().getBytes()),
-                    BaseEncoding.base32().encode(obj.getDate().getBytes()),
-                    BaseEncoding.base32().encode(obj.getTag().getBytes()),
-                    BaseEncoding.base32().encode(obj.getTitle().replace("\n", "\\\\n")
-                            .replace("\t", "\\\\t").getBytes()));
-
-            final HttpURLConnection connection = (HttpURLConnection) new URL(apiURL).openConnection();
-            connection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Authorization", "Bearer " + user.idToken);
-            connection.setRequestMethod("POST");
-            connection.setDoOutput(true);
-
-            final OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
-            writer.write(json);
-            writer.flush();
-            writer.close();
-
-            final int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                System.out.println("\"" + obj.getTitle() + "\" successfully inserted to the database.");
-            } else {
-                System.out.println("Failed to \"" + obj.getTitle() + "\" data to the database. Response code: " + responseCode);
-            }
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-    }
-
     private String[] convertThoughtObjectToJson(final ThoughtObject obj) {
         final String path = obj.getFile().replace(".json", "").replace(" ", "_");
 
-        final String json = String.format("{\"Body\": \"%s\", \"Date\": \"%s\", \"Tag\": \"%s\", \"Title\": \"%s\"}}",
+        final String json = String.format("{\"Body\": \"%s\", \"Date\": \"%s\", \"Tag\": \"%s\", \"Title\": \"%s\"}",
                 BaseEncoding.base32().encode(obj.getBody().getBytes()),
                 BaseEncoding.base32().encode(obj.getDate().getBytes()),
                 BaseEncoding.base32().encode(obj.getTag().getBytes()),
